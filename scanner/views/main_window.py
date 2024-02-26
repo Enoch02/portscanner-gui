@@ -2,9 +2,18 @@ import sys
 
 from PyQt6 import QtGui
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QFormLayout, QLineEdit, QWidget, QPushButton, QHBoxLayout
+from PyQt6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QLabel,
+    QFormLayout,
+    QLineEdit,
+    QWidget,
+    QPushButton,
+    QHBoxLayout,
+)
 
-from utils.helper_functions import scan_host
+from utils.helper_functions import scan_host, validate_input_and_scan
 
 
 class MainWindow(QMainWindow):
@@ -22,12 +31,12 @@ class MainWindow(QMainWindow):
         self.host_line_edit.setText("localhost")
 
         port_range_h_box = QHBoxLayout()
-        
+
         self.start_line_edit = QLineEdit()
         self.start_line_edit.setPlaceholderText("Start")
         self.start_line_edit.setText("50")
 
-        self.end_line_edit= QLineEdit()
+        self.end_line_edit = QLineEdit()
         self.end_line_edit.setPlaceholderText("End")
         self.end_line_edit.setText("65535")
 
@@ -35,16 +44,27 @@ class MainWindow(QMainWindow):
         port_range_h_box.addWidget(self.end_line_edit)
 
         self.scan_button = QPushButton("Scan Host")
-        self.scan_button.clicked.connect(lambda: scan_host(self.host_line_edit.text()))
+        self.scan_button.clicked.connect(
+            lambda: validate_input_and_scan(
+                self,
+                self.host_line_edit.text(),            
+                self.start_line_edit.text(),
+                self.end_line_edit.text(),
+            )
+        )
+        #self.scan_button.clicked.connect(lambda: scan_host(self.host_line_edit.text()))
 
         main_form = QFormLayout()
-        main_form.setFieldGrowthPolicy(main_form.FieldGrowthPolicy.AllNonFixedFieldsGrow)
-        main_form.setFormAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        main_form.setFieldGrowthPolicy(
+            main_form.FieldGrowthPolicy.AllNonFixedFieldsGrow
+        )
+        main_form.setFormAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
         main_form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
         main_form.addRow("Host", self.host_line_edit)
         main_form.addRow("Port Range", port_range_h_box)
         main_form.addRow(self.scan_button)
-
 
         central_widget.setLayout(main_form)
         self.setCentralWidget(central_widget)
