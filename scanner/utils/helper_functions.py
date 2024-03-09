@@ -36,7 +36,7 @@ def scan_host(target: str, start: int, end: int):
     print("Starting scan on host: ", t_IP)
 
     for i in range(start, end):  # max value = 65535
-        print("Scanning port", i)
+        # print("Scanning port", i)
         s = socket(AF_INET, SOCK_STREAM)
 
         conn = s.connect_ex((t_IP, i))
