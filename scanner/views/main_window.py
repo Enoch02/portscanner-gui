@@ -1,11 +1,6 @@
-import sys
-
-from PyQt6 import QtGui
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
-    QApplication,
     QMainWindow,
-    QLabel,
     QFormLayout,
     QLineEdit,
     QWidget,
@@ -13,12 +8,15 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
 )
 
-from utils.helper_functions import scan_host, validate_input_and_scan
+from model.port import Port
+from utils.workers import PortScannerWorker
+from views.scan_result_window import ScanResultWindow
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.result_window = ScanResultWindow()
 
         self.setup_main_window()
 
@@ -44,15 +42,7 @@ class MainWindow(QMainWindow):
         port_range_h_box.addWidget(self.end_line_edit)
 
         self.scan_button = QPushButton("Scan Host")
-        self.scan_button.clicked.connect(
-            lambda: validate_input_and_scan(
-                self,
-                self.host_line_edit.text(),            
-                self.start_line_edit.text(),
-                self.end_line_edit.text(),
-            )
-        )
-        #self.scan_button.clicked.connect(lambda: scan_host(self.host_line_edit.text()))
+        self.scan_button.clicked.connect(self.start_scan)
 
         main_form = QFormLayout()
         main_form.setFieldGrowthPolicy(
@@ -69,3 +59,16 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(main_form)
         self.setCentralWidget(central_widget)
         self.show()
+
+    def start_scan(self):
+        self.worker = PortScannerWorker(self, self.host_line_edit.text(), self.start_line_edit.text(), self.end_line_edit.text())
+        self.worker.finished.connect(self.on_scan_finished)
+        self.worker.start()
+
+    def on_scan_finished(self, result: list[Port]):
+        self.result_window.show_results(result)
+
+    def closeEvent(self, a0) -> None:
+        self.result_window.close()
+
+        return super().closeEvent(a0)

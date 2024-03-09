@@ -2,10 +2,11 @@ from socket import *
 import time
 from PyQt6.QtWidgets import QWidget, QMessageBox
 
+from model.port import Port
 from utils.custom_errros import InvalidPortRangeException
 
 
-def validate_input_and_scan(parent: QWidget, target: str, start: str, end: str):
+def validate_input_and_scan(parent: QWidget, target: str, start: str, end: str) -> list[Port]:
     try:
         start = int(start)
         end = int(end)
@@ -18,7 +19,7 @@ def validate_input_and_scan(parent: QWidget, target: str, start: str, end: str):
                 "Start port is greater than end port in the range"
             )
 
-        scan_host(target, start, end)
+        return scan_host(target, start, end)
 
     except InvalidPortRangeException as e:
         QMessageBox.critical(
@@ -30,18 +31,24 @@ def validate_input_and_scan(parent: QWidget, target: str, start: str, end: str):
         )
 
 
-def scan_host(target: str, start: int, end: int):
+def scan_host(target: str, start: int, end: int) -> list[Port]:
+    ports: list[Port] = []
     start_time = time.time()
     t_IP = gethostbyname(target)
     print("Starting scan on host: ", t_IP)
 
     for i in range(start, end):  # max value = 65535
-        # print("Scanning port", i)
         s = socket(AF_INET, SOCK_STREAM)
 
         conn = s.connect_ex((t_IP, i))
         if conn == 0:
             print("Port %d: OPEN" % (i,))
+            ports.append(Port(i, "OPEN"))
+        else:
+            ports.append(Port(i, "CLOSED"))
+
         s.close()
 
     print("Time taken:", time.time() - start_time)
+
+    return ports

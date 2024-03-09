@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QApplication
 from views.main_window import MainWindow
 
 
+# TODO: try to identify what program is using the ports
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
